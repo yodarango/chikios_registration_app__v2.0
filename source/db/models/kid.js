@@ -6,11 +6,13 @@ const KidSchema = new Schema({
     type: String,
     required: true,
     maxLength: 140,
+    lowercase: true,
   },
   last_name: {
     type: String,
     required: true,
     maxLength: 140,
+    lowercase: true,
   },
   age: {
     type: Number,
@@ -20,21 +22,25 @@ const KidSchema = new Schema({
     type: String,
     required: true,
     maxLength: 8,
+    lowercase: true,
   },
   guardian_first_name: {
     type: String,
     required: true,
     maxLength: 140,
+    lowercase: true,
   },
   guardian_last_name: {
     type: String,
     required: true,
     maxLength: 140,
+    lowercase: true,
   },
   guardian_phone_number: {
     type: Number,
     required: true,
     maxLength: 12,
+    lowercase: true,
   },
   allow_third_party_pick_up: {
     type: Boolean,
@@ -44,11 +50,13 @@ const KidSchema = new Schema({
     type: String,
     required: false,
     maxLength: 140,
+    lowercase: true,
   },
   second_guardian_last_name: {
     type: String,
     required: false,
     maxLength: 140,
+    lowercase: true,
   },
   photo: {
     type: String,
@@ -65,15 +73,16 @@ const KidSchema = new Schema({
       required: false,
     },
     checked_in_at: {
-      type: Date,
+      type: String,
       required: false,
     },
     checked_out_by: {
       type: String,
       required: false,
+      lowercase: true,
     },
     checked_out_at: {
-      type: Date,
+      type: String,
       required: false,
     },
   },

@@ -9,12 +9,20 @@ router.use(express.urlencoded({ extended: false }));
 
 // models
 import { Kid } from "../db/models/kid.js";
+import { currTime } from "../helpers/temp/current_time.js";
+import { authenticateToken } from "../helpers/auth/authenticate_token.js";
 
 router.use(cors());
 // ---------- get request
 router.post("/register", async (req, res, next) => {
+  console.log(req.body.allow_third_party_pick_up);
+  const allowThirdPartyPickup =
+    req.body.allow_third_party_pick_up === "yes" ? true : false;
+
+  console.log(allowThirdPartyPickup);
   const newKid = new Kid({
     ...req.body,
+    allow_third_party_pick_up: allowThirdPartyPickup,
     created: new Date(),
     registration: {
       checked_in: false,
@@ -28,7 +36,7 @@ router.post("/register", async (req, res, next) => {
   });
   try {
     const kid = await newKid.save();
-    console.log(kid);
+    //console.log(kid);
     res
       .status(200)
       .send({ success: "child successfully registered", id: kid._id });
@@ -38,33 +46,39 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
-router.post("/check_in/:id", async (req, res) => {
+router.put("/check-in/:id", authenticateToken, async (req, res) => {
   try {
     const kid = await Kid.findOne({ _id: req.params.id });
-    kid.registration.hecked_in = true;
-    kid.registration.checked_in_at = new Date();
+    kid.registration.checked_in = true;
+    kid.registration.checked_in_at = currTime();
     kid.registration.checked_out_by = null;
     kid.registration.checked_out_at = null;
 
-    await kid.save();
-    return kid;
+    const updated = await kid.save();
+
+    console.log(updated.registration);
+
+    res.send({ id: updated._id, time: updated.registration.checked_in_at });
   } catch (error) {
     console.log(error);
     return `the following error ocurred ${error}`;
   }
 });
 
-router.post("/check_out/:id", async (req, res) => {
+router.put("/check-out/:id", authenticateToken, async (req, res) => {
   try {
     const kid = await Kid.findOne({ _id: req.params.id });
 
-    kid.registration.hecked_in = true;
+    kid.registration.checked_in = false;
     kid.registration.checked_in_at = null;
-    kid.registration.checked_out_by = args.checked_out_by;
-    kid.registration.checked_out_at = new Date();
+    //kid.registration.checked_out_by = args.checked_out_by;
+    kid.registration.checked_out_at = currTime();
 
-    await kid.save();
-    return kid;
+    const updated = await kid.save();
+
+    console.log(updated.registration);
+
+    res.send({ id: updated._id, time: updated.registration.checked_out_at });
   } catch (error) {
     console.log(error);
     return `the following error ocurred ${error}`;

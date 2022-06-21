@@ -14,14 +14,17 @@
       .main-wrapper {
         width: 90%;
         margin: 5rem auto;
+        max-width: 600px;
       }
       p {
         color: rgb(83, 81, 81);
       }
       .dr_card {
         background-color: #f2f2f2;
-        max-width: 96%;
+        width: 100%;
+        max-width: 500px;
         margin: auto;
+        background-color: rgb(227, 242, 255);
       }
 
       .child-photo-wrapper {
@@ -33,7 +36,7 @@
         margin: 2rem auto;
       }
 
-      .child-photo {
+      .child-photo  {
         display: block;
         width: 100%;
         margin: 0;
@@ -41,23 +44,209 @@
         object-position: center;
       }
 
-      .dr_label {
+      .dr_label  {
         color: rgb(80, 117, 218);
-        font-weight: 800;
-      }
+        font-weight: 600;
+    }
       .dr_h_label {
-        background-color: #bbbbbb;
-      }
-      .dr_button {
+        border-bottom: 2px solid rgb(34, 45, 105);
+        color: rgb(34, 45, 105);
+        font-weight: 800;
+    }
+      .dr_button  {
         width: 100%;
-      }
+    }
+
+    .dr-child-photo{
+      width: 100%;
+      max-width: 10rem;
+      display: block;
+    }
+
+    .dr-display {
+      display: block;
+    }
+
+    .dr-hide {
+      display: none;
+    }
     </style>
     <script></script>
     <title>Kids Quest</title>
   </head>
   <body>
     <main class="main-wrapper">
+      <%if(count > 0){%>
       <h1>Total kids registered: <%=count%></h1>
+      <%}%>
+      <button class="btn btn-dark btn-block btn-dark" onclick="logout()">Logout</button>
+
+      <p class="mt-4">Enter at least three characters to look up by last name</p>
+      <div class="input-group dr-input-group">
+        <input type="text" class="form-control" placeholder="Search last name" aria-label="child's name" aria-describedby="child name" id="search-child">
+        <button class="btn btn-primary" onclick="searchChild()">Search</button>
+        <a href="/admin" class="btn btn-info">Reset</a>
+      </div>
+      </div>
+
+      <div class="container-sm my-5 p-0">
+        <%kids.forEach((kid)=>{%>
+        <div class="dr_card mx-auto my-4 p-2">
+          <div class="dr_h_label py-2">Child info</div>
+          <div class="my-2">
+            <img src="<%=kid.photo%>" alt="child-photo" class="dr-child-photo mx-auto"/>
+          </div>
+         
+          <div class="col-sm-6">
+            <p class=" mt-2"><span class="dr_label">First name: </span><%=kid.first_name%></p>
+            <p class=" mt-2"><span class="dr_label">Last name: </span><%=kid.last_name%></p>
+            <p class=" mt-2"><span class="dr_label">Age: </span><%=kid.age%></p>
+          </div>
+          <div class="dr_h_label py-2">Guardian Info</div>
+          <p class=" mt-2"><span class="dr_label">First name: </span><%=kid.guardian_first_name%></p>
+          <p class=" mt-2"><span class="dr_label">Last name: </span><%=kid.guardian_last_name%></p>
+          <p class=" mt-2"><span class="dr_label">Phone: </span><%=kid.guardian_phone_number%></p>
+
+          <%if(kid.allow_third_party_pick_up){%>
+            <div class="dr_h_label py-2">Secondary Guardian</div>
+            <p class=" mt-2"><span class="dr_label">First name: </span><%=kid.second_guardian_first_name%></p>
+            <p class=" mt-2"><span class="dr_label">Last name: </span><%=kid.second_guardian_last_name%></p>
+            <%}%>
+  
+            <div class="dr_h_label py-2">Child Status</div>
+            <div class="<%=kid.registration.checked_in ? 'dr-display' : 'dr-hide'%>" data-checkin="<%=kid._id%>">
+              <p class=" mt-2"><span class="dr_label">Status </span>Checkedin at: <span id="checkin-time"></span><%=kid.registration.checked_in_at%></span></p>
+              <button class="primary btn-success btn-lg btn-block w-100" onclick="checkOut('<%=kid._id%>', '<%=kid.guardian_first_name%> <%=kid.guardian_last_name%>')">Checkout</button>
+
+              <%if(kid.allow_third_party_pick_up){%>
+              <button class="primary btn-info btn-lg btn-block w-100 mt-4" onclick="checkOut('<%=kid._id%>', '<%=kid.second_guardian_first_name%> <%=kid.second_guardian_last_name%>')">Checkout (2nd Guardian)</button>
+              <%}%>
+            </div>
+
+            <div class="<%=!kid.registration.checked_in ? 'dr-display' : 'dr-hide'%>"  data-checkout="<%=kid._id%>">
+              <p class=" mt-2"><span class="dr_label">Status </span>Checkedout at: <span id="checkout-time"><%=kid.registration.checked_out_at%></span></p>
+              <p class=" mt-2"><span class="dr_label">Checkout by: </span> <span id="check-out-by"> <%=kid.registration.checked_out_by%></span></p>
+              <button class="primary btn-danger btn-lg btn-block w-100" onclick="checkIn('<%=kid._id%>')">Checkin</button>
+            </div>
+        </div>
+
+        <%})%>
+
+        <div class="d-flex p-2 flex-row justify-content-between">
+          <button class="btn btn-dark" id="btn-back" onclick="paginate(-1)"><</button>
+          <%if(kids.length === 2){%>
+          <button class="btn btn-dark" id="btn-forth"  onclick="paginate(1)">></button>
+          <%}%>
+
+        </div>
+      </div>
     </main>
+    <script>
+
+      const checkIn = async(id)=>{
+        // ----------- remove the button to avoid double clicks
+        const checkInBlock = document.querySelectorAll(`[data-checkout="${id}"]`);
+        checkInBlock.forEach((item)=>{
+          item.classList.remove('dr-display')
+          item.classList.add('dr-hide')
+        })
+
+      const request = await fetch(`/kids/check-in/${id}`, {
+        method: "PUT", 
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({checkedIn: true})
+      })
+
+      const response = await request.json();
+
+      if(response.id){
+
+         // ----------- set the new button and data to reflect canges
+        const checkOutBlock= document.querySelectorAll(`[data-checkin="${id}"]`);
+        const timeText = document.querySelector(`[data-checkin="${id}"] #checkin-time`);
+
+        timeText.textContent = response.time
+
+        checkOutBlock.forEach((item)=>{
+          item.classList.remove('dr-hide')
+          item.classList.add('dr-display')
+        })
+
+      }
+      }
+
+      // ----------------------- checkout child -----------------
+
+      const checkOut = async(id, party)=>{
+        // ----------- remove the button to avoid double clicks
+        const checkInBlock = document.querySelectorAll(`[data-checkin="${id}"]`);
+        checkInBlock.forEach((item)=>{
+          item.classList.remove('dr-display')
+          item.classList.add('dr-hide')
+        })
+
+      const request = await fetch(`/kids/check-out/${id}`, {
+        method: "PUT", 
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          checkedIn: false, 
+          checked_out_by: party
+        })
+      })
+
+      const response = await request.json();
+
+      if(response.id){
+         // ----------- set the new button and data to reflect canges
+        const checkOutBlock= document.querySelectorAll(`[data-checkout="${id}"]`);
+        const timeText = document.querySelector(`[data-checkout="${id}"] #checkout-time`);
+        const checkOutBy = document.querySelector(`[data-checkout="${id}"] #check-out-by`);
+
+        timeText.textContent = response.time
+
+        checkOutBlock.forEach((item)=>{
+          item.classList.remove('dr-hide')
+          item.classList.add('dr-display')
+        })
+
+        checkOutBy.textContent = party;
+      }
+      }
+
+      // --------------- log out 
+      const logout = ()=>{
+        const now = Date.now();
+        const date = new Date(now - 84000);
+
+        console.log(date.toUTCString())
+
+        document.cookie = `authorization=exp; expires=${date.toUTCString()}; path=/`
+        location.reload()
+      }
+
+      // ------------------ paginate ------------
+      const paginate = (direction)=>{
+        console.log(direction)
+        const currPage = location.href.includes("?skip=")
+       const page = !currPage ? 0 : parseInt(location.href.split("?skip=")[1])
+        if(direction === 1){
+          location.href = `/admin?skip=${page + 10}`
+        }else if (direction === -1 && page >= 10) {
+          location.href = `/admin?skip=${page - 10}`
+        }
+      }
+
+      // ---------------- search child -------------
+     const searchChild = () => {
+        const searchInput = document.getElementById("search-child");
+
+        console.log(searchInput.value)
+        location.href = `/admin?lastname=${searchInput.value}`
+     }
+    </script>
   </body>
 </html>

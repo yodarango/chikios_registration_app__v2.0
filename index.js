@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-//dotenv.config();
-//import cors from "cors";
+dotenv.config();
+import cookieParser from "cookie-parser";
 
 // set up the server
 import express from "express";
@@ -16,6 +16,12 @@ import mainControllers from "./source/controllers/main.js";
 app.set("view engine", "ejs");
 app.use(express.static(`/public`));
 
+app.use(cookieParser());
+app.use(express.static("public"));
+app.use("/kids", kidControllers);
+app.use("/admin", kidControllersGet);
+app.use("/", mainControllers);
+
 // db connection
 export const dbConnection = async () => {
   try {
@@ -30,12 +36,6 @@ export const dbConnection = async () => {
   }
 };
 dbConnection();
-
-//app.use(cors());
-app.use(express.static("public"));
-app.use("/kids", kidControllers);
-app.use("/admin", kidControllersGet);
-app.use("/", mainControllers);
 
 app.listen(process.env.PORT, () => {
   console.log(`listening on post ${process.env.PORT}`);
