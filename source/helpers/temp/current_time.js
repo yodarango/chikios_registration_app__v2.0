@@ -1,5 +1,7 @@
 export const currTime = () => {
-  const today = new Date();
+  const today = new Date(
+    new Date().toLocaleString("en-US", "America/New_York")
+  );
   const month = today.getMonth();
   const day = today.getDate();
   const year = today.getFullYear();

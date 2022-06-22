@@ -15,11 +15,9 @@ import { authenticateToken } from "../helpers/auth/authenticate_token.js";
 router.use(cors());
 // ---------- get request
 router.post("/register", async (req, res, next) => {
-  console.log(req.body.allow_third_party_pick_up);
   const allowThirdPartyPickup =
     req.body.allow_third_party_pick_up === "yes" ? true : false;
 
-  console.log(allowThirdPartyPickup);
   const newKid = new Kid({
     ...req.body,
     allow_third_party_pick_up: allowThirdPartyPickup,
@@ -71,12 +69,10 @@ router.put("/check-out/:id", authenticateToken, async (req, res) => {
 
     kid.registration.checked_in = false;
     kid.registration.checked_in_at = null;
-    //kid.registration.checked_out_by = args.checked_out_by;
+    kid.registration.checked_out_by = req.body.checked_out_by;
     kid.registration.checked_out_at = currTime();
 
     const updated = await kid.save();
-
-    console.log(updated.registration);
 
     res.send({ id: updated._id, time: updated.registration.checked_out_at });
   } catch (error) {
