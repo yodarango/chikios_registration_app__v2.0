@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config();
+//import dotenv from "dotenv";
+// dotenv.config();
 import cookieParser from "cookie-parser";
 
 // set up the server
