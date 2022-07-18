@@ -37,7 +37,7 @@ const KidSchema = new Schema({
     lowercase: true,
   },
   guardian_phone_number: {
-    type: Number,
+    type: String,
     required: true,
     maxLength: 12,
     lowercase: true,
