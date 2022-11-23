@@ -34,7 +34,7 @@ router.post("/register", async (req, res, next) => {
   });
   try {
     const kid = await newKid.save();
-    //console.log(kid);
+    console.log(kid);
     res
       .status(200)
       .send({ success: "child successfully registered", id: kid._id });

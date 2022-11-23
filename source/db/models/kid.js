@@ -39,7 +39,7 @@ const KidSchema = new Schema({
   guardian_phone_number: {
     type: String,
     required: true,
-    maxLength: 12,
+    maxLength: 14,
     lowercase: true,
   },
   allow_third_party_pick_up: {
