@@ -45,3 +45,15 @@ router.get("/:id", async (req, res) => {
   }
 });
 export default router;
+
+router.delete("/:id", async (req, res) => {
+  try {
+    if (req.params.id) {
+      const deleted = await Kid.deleteOne({ _id: req.params.id });
+      if (deleted) res.send(true);
+    }
+  } catch (error) {
+    res.send(false);
+    console.log(error);
+  }
+});

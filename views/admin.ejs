@@ -86,7 +86,10 @@
       <div class="container-sm my-5 p-0">
         <%kids.forEach((kid)=>{%>
         <div class="dr_card mx-auto my-4 p-2">
-          <div class="dr_h_label py-2">Child info</div>
+          <div class="dr_h_label py-2 d-flex align-items-center justify-content-between"> 
+            <span>Child info</span> <span class="btn btn-danger text-white py-2 px-3" onclick="deleteChild('<%=kid._id%>')">Delete</span> 
+          </div>
+
           <div class="my-2">
             <img src="<%=kid.photo%>" alt="child-photo" class="dr-child-photo mx-auto"/>
           </div>
@@ -117,17 +120,16 @@
             <div class="<%=!kid.registration.checked_in ? 'dr-display' : 'dr-hide'%>"  data-checkout="<%=kid._id%>">
               <p class=" mt-2"><span class="dr_label">Status </span>Checkedout at: <span id="checkout-time"><%=kid.registration.checked_out_at%></span></p>
               <p class=" mt-2"><span class="dr_label">Checkout by: </span> <span id="check-out-by"> <%=kid.registration.checked_out_by%></span></p>
-              <button class="primary btn-danger btn-lg btn-block w-100" onclick="checkIn('<%=kid._id%>')">Checkin</button>
+              <button class="primary btn-primary btn-lg btn-block w-100" onclick="checkIn('<%=kid._id%>')">Checkin</button>
             </div>
         </div>
         <%})%>
 
-        <div class="d-flex p-2 flex-row justify-content-between">
-          <button class="btn btn-dark" id="btn-back" onclick="paginate(-1)"><</button>
-          <%if(kids.length === 2){%>
-          <button class="btn btn-dark" id="btn-forth"  onclick="paginate(1)">></button>
+        <div id="pagination-constrolls" class="d-flex p-2 flex-row justify-content-between">
+          <button class="btn btn-dark" id="btn-back" onclick="paginate(-10)"><</button>
+          <%if(kids.length >= 10){%>
+          <button class="btn btn-dark" id="btn-forth"  onclick="paginate(10)">></button>
           <%}%>
-
         </div>
       </div>
     </main>
@@ -202,10 +204,13 @@
       const paginate = (direction)=>{
         console.log(direction)
         const currPage = location.href.includes("?skip=")
-       const page = !currPage ? 0 : parseInt(location.href.split("?skip=")[1])
-        if(direction === 1){
+        console.log("currPage", currPage)
+        const page = !currPage ? 0 : parseInt(location.href.split("?skip=")[1])
+        console.log("page", page)
+        if(direction === 10){
+          console.log("should render")
           location.href = `/admin?skip=${page + 10}`
-        }else if (direction === -1 && page >= 10) {
+        }else if (direction === -10 && page >= 10) {
           location.href = `/admin?skip=${page - 10}`
         }
       }
@@ -214,6 +219,16 @@
         const searchInput = document.getElementById("search-child");
         console.log(searchInput.value)
         location.href = `/admin?lastname=${searchInput.value}`
+     }
+
+     // -------- delete child ------
+     const deleteChild = async (id)=>{
+      const req = await fetch(`/admin/${id}`, {
+        method: "DELETE",
+      })
+
+      const res = await req.json()
+      if(res) location.href = "/admin"
      }
     </script>
   </body>
