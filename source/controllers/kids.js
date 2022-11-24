@@ -35,9 +35,7 @@ router.post("/register", async (req, res, next) => {
   try {
     const kid = await newKid.save();
     console.log(kid);
-    res
-      .status(200)
-      .send({ success: "child successfully registered", id: kid._id });
+    res.send({ success: "child successfully registered", id: kid._id });
   } catch (error) {
     console.log(error);
     return `the following error ocurred ${error}`;
